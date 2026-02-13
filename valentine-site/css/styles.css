@@ -1,0 +1,348 @@
+/* =========================================
+   Valentine SPA — Mobile-first, no framework
+   ========================================= */
+
+/* CSS variables are populated from JS config for easy theme tweaks */
+:root{
+  --bg1:#ff7bbf;
+  --bg2:#ffb3d9;
+  --ink:#2a0f20;
+  --muted:rgba(42,15,32,.72);
+  --card:rgba(255,255,255,.84);
+  --card2:rgba(255,255,255,.72);
+  --primary:#ff3d8d;
+  --primary2:#ff6fae;
+  --shadow: 0 18px 50px rgba(0,0,0,.18);
+  --radius: 22px;
+  --ring: 0 0 0 4px rgba(255, 61, 141, .18);
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color:var(--ink);
+  background: radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.35), transparent 50%),
+              linear-gradient(160deg, var(--bg1), var(--bg2));
+  overflow-x:hidden;
+}
+
+/* Floating background emoji layer */
+#float-layer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  z-index:0;
+}
+
+/* App sits above floating layer */
+.app{
+  position:relative;
+  z-index:1;
+}
+
+/* Slide engine */
+.slide{
+  min-height: 100svh; /* mobile safe */
+  display:none;
+  padding: 22px 16px calc(20px + env(safe-area-inset-bottom));
+  place-items:center;
+  align-content:center;
+}
+.slide.is-active{
+  display:grid;
+}
+
+/* Transition (handled via classes toggled in JS) */
+.slide .card{
+  opacity:0;
+  transform: translateY(10px);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.slide.is-active .card{
+  opacity:1;
+  transform: translateY(0);
+}
+.slide.is-enter-left .card{ transform: translateX(-10px); }
+.slide.is-enter-right .card{ transform: translateX(10px); }
+.slide.is-active.is-enter-left .card,
+.slide.is-active.is-enter-right .card{ transform: translateX(0); }
+
+.card{
+  width: min(92vw, 420px);
+  background: linear-gradient(180deg, var(--card), var(--card2));
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 16px;
+  backdrop-filter: blur(10px);
+}
+.card-wide{
+  width: min(94vw, 520px);
+}
+
+.eyebrow{
+  margin: 0 0 8px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: rgba(42,15,32,.85);
+}
+
+.title{
+  margin: 0 0 10px;
+  font-size: 1.55rem;
+  line-height: 1.05;
+  letter-spacing: -0.4px;
+}
+.subtitle{
+  margin: 0 0 14px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.hint{
+  margin: 12px 0 0;
+  font-size: .92rem;
+  color: rgba(42,15,32,.62);
+}
+
+/* Buttons */
+.btn-row{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top: 8px;
+}
+.btn{
+  appearance:none;
+  border:0;
+  border-radius: 999px;
+  padding: 12px 14px;
+  min-height: 44px;
+  font-weight: 800;
+  cursor:pointer;
+  user-select:none;
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.btn:active{ transform: translateY(1px) scale(.99); }
+.btn:focus-visible{ outline:none; box-shadow: var(--ring); }
+
+.btn-primary{
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  color: white;
+  box-shadow: 0 10px 24px rgba(255, 61, 141, .28);
+}
+.btn-primary:hover{ filter: brightness(1.03); transform: translateY(-1px); }
+
+.btn-secondary{
+  background: rgba(255,255,255,.78);
+  color: var(--ink);
+  border: 1px solid rgba(42,15,32,.12);
+}
+.btn-secondary:hover{ transform: translateY(-1px); }
+
+.btn-ghost{
+  background: rgba(255,255,255,.52);
+  color: rgba(42,15,32,.82);
+  border: 1px dashed rgba(42,15,32,.25);
+}
+.btn-ghost:hover{ transform: translateY(-1px); }
+
+/* Photo */
+.figure{
+  margin: 10px 0 14px;
+}
+.photo{
+  width: 100%;
+  height: auto;
+  display:block;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 14px 34px rgba(0,0,0,.14);
+  background: rgba(255,255,255,.55);
+}
+.figure-wide .photo{
+  border-radius: 16px;
+}
+.caption{
+  margin: 10px 2px 0;
+  color: rgba(42,15,32,.74);
+  line-height: 1.35;
+  font-size: 1rem;
+}
+.caption .small{ font-size: .92rem; color: rgba(42,15,32,.62); }
+
+/* Love meter */
+.meter{
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(42,15,32,.10);
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  margin: 12px 0 14px;
+}
+.meter-top{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.meter-value{
+  font-size: 1.55rem;
+  font-weight: 900;
+}
+.meter-msg{
+  font-size: .95rem;
+  color: rgba(42,15,32,.62);
+  text-align:right;
+  max-width: 60%;
+}
+.range{
+  width: 100%;
+  accent-color: var(--primary);
+  height: 36px;
+}
+.meter-scale{
+  display:flex;
+  justify-content:space-between;
+  font-size: .86rem;
+  color: rgba(42,15,32,.56);
+}
+
+/* Runaway zone keeps button bounded */
+.runaway-zone{
+  position: relative;
+  min-height: 110px;
+  padding: 6px 4px 2px;
+}
+.runaway-zone .btn{
+  position: relative;
+}
+.runaway-zone [data-runaway]{
+  position:absolute;
+  right: 0;
+  bottom: 0;
+}
+
+/* Duo (Min vs Minnie) */
+.duo{
+  position: relative;
+  margin: 12px 0 6px;
+  min-height: 420px;
+}
+.duo-frame{
+  position:absolute;
+  width: 54%;
+  max-width: 260px;
+}
+.duo-frame .photo{
+  border-radius: 22px;
+}
+.mini-cap{
+  margin: 8px 4px 0;
+  font-size: .92rem;
+  color: rgba(42,15,32,.70);
+  font-weight: 800;
+}
+.duo-a{ top: 0; right: 0; transform: rotate(1.5deg); }
+.duo-b{ bottom: 0; left: 0; transform: rotate(-1.5deg); }
+
+.duo-text{
+  position:absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 4px;
+}
+.duo-text .caption{
+  background: rgba(255,255,255,.68);
+  border: 1px solid rgba(42,15,32,.10);
+  border-radius: 16px;
+  padding: 12px 12px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.10);
+}
+
+/* Heart placeholder */
+.heart-slot{
+  height: 260px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.5);
+  border: 1px solid rgba(42,15,32,.10);
+  display:grid;
+  place-items:center;
+  margin: 12px 0 14px;
+  overflow:hidden;
+}
+.heart-fallback{ text-align:center; padding: 14px; }
+.pulse{
+  font-size: 3rem;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{ transform: scale(1); filter: brightness(1); }
+  50%{ transform: scale(1.12); filter: brightness(1.05); }
+}
+.small{ font-size: .92rem; color: rgba(42,15,32,.62); margin: 6px 0 0; }
+
+/* Finale */
+.final-text{
+  margin-top: 12px;
+  text-align:center;
+}
+.korean{
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  margin: 0 0 6px;
+}
+
+/* After credit */
+.stack{
+  display:grid;
+  gap: 12px;
+  margin: 12px 0 10px;
+}
+.sticker{
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+  background: rgba(255,255,255,.6);
+}
+
+/* Floating emoji item */
+.float-emoji{
+  position:absolute;
+  bottom: -10vh;
+  will-change: transform, opacity;
+  animation-name: floatUp;
+  animation-timing-function: linear;
+  opacity: .0;
+  filter: drop-shadow(0 10px 12px rgba(0,0,0,.10));
+}
+@keyframes floatUp{
+  0%{ transform: translate3d(0,0,0); opacity: 0; }
+  10%{ opacity: .75; }
+  80%{ opacity: .75; }
+  100%{ transform: translate3d(0,-120vh,0); opacity: 0; }
+}
+
+/* Reduced motion: disable floating + transitions */
+@media (prefers-reduced-motion: reduce){
+  .slide .card{ transition:none !important; }
+  #float-layer{ display:none !important; }
+  .pulse{ animation:none !important; }
+  .btn{ transition:none !important; }
+}
+
+/* Wider screens */
+@media (min-width: 760px){
+  .card{ padding: 22px 22px; }
+  .title{ font-size: 1.8rem; }
+  .duo{ min-height: 460px; }
+  .duo-frame{ width: 46%; max-width: 280px; }
+}
