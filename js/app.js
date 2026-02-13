@@ -27,6 +27,32 @@
   let currentSlideIndex = 0;
   const slides = Array.from(document.querySelectorAll(".slide"));
 
+  function lockFocus(slideEl) {
+    slideEl.querySelectorAll("a,button,input,textarea,select,[tabindex]")
+      .forEach(el => {
+        if (el.getAttribute("tabindex") === "-1") return;
+        el.dataset._tab = el.getAttribute("tabindex") ?? "";
+        el.setAttribute("tabindex", "-1");
+      });
+  }
+
+  function unlockFocus(slideEl) {
+    slideEl.querySelectorAll("a,button,input,textarea,select,[tabindex]")
+      .forEach(el => {
+        const prev = el.dataset._tab;
+        if (prev !== undefined) {
+          if (prev === "") el.removeAttribute("tabindex");
+          else el.setAttribute("tabindex", prev);
+          delete el.dataset._tab;
+        } else {
+          // allow natural focus on interactive elements
+          if (el.getAttribute("tabindex") === "-1" && !el.matches(".title")) {
+            el.removeAttribute("tabindex");
+          }
+        }
+      });
+  }
+
   function showSlide(index, direction = "next") {
     const nextIdx = clamp(index, 0, slides.length - 1);
     const prevSlide = slides[currentSlideIndex];
@@ -37,46 +63,29 @@
     if (prevSlide) {
       prevSlide.classList.remove("is-active", "is-enter-left", "is-enter-right");
       prevSlide.setAttribute("aria-hidden", "true");
-      // Prevent stray focus on hidden slide
-      prevSlide.querySelectorAll("a,button,input,textarea,select,[tabindex]")
-        .forEach(el => {
-          if (el.getAttribute("tabindex") === "-1") return;
-          el.dataset._tab = el.getAttribute("tabindex") ?? "";
-          el.setAttribute("tabindex", "-1");
-        });
+      lockFocus(prevSlide);
     }
 
     // Show next
     nextSlide.classList.add("is-active");
     nextSlide.classList.add(direction === "prev" ? "is-enter-left" : "is-enter-right");
     nextSlide.setAttribute("aria-hidden", "false");
-    nextSlide.querySelectorAll("[data-_tab]").forEach(() => {}); // no-op placeholder
-
-    // Restore focusability inside active slide
-    nextSlide.querySelectorAll("a,button,input,textarea,select,[tabindex]")
-      .forEach(el => {
-        if (el.hasAttribute("data-action") || el.tagName === "BUTTON" || el.tagName === "INPUT" || el.tagName === "A") {
-          const prev = el.dataset._tab;
-          if (prev !== undefined) {
-            if (prev === "") el.removeAttribute("tabindex");
-            else el.setAttribute("tabindex", prev);
-            delete el.dataset._tab;
-          } else {
-            if (el.getAttribute("tabindex") === "-1" && !el.matches(".title")) el.removeAttribute("tabindex");
-          }
-        }
-      });
+    unlockFocus(nextSlide);
 
     currentSlideIndex = nextIdx;
 
-    // Focus management: focus the title for smooth "app" feel
+    // Focus management
     const title = nextSlide.querySelector(".title");
     if (title) title.focus({ preventScroll: true });
 
     // Populate photo slide if needed
     hydratePhotoSlide(nextSlide);
 
-    // cleanup transition helper classes after paint
+    // If meter slide, ensure meter is initialized nicely
+    if (nextSlide.dataset.slide === "meter") {
+      resetLoveMeter(nextSlide);
+    }
+
     requestAnimationFrame(() => {
       nextSlide.classList.remove("is-enter-left", "is-enter-right");
     });
@@ -95,99 +104,111 @@
     const img = slideEl.querySelector("[data-photo]");
     const cap = slideEl.querySelector("[data-caption]");
     if (img && !img.src) img.src = entry.src;
-    if (cap && !cap.textContent) cap.textContent = entry.caption || "";
+    if (cap && cap.textContent === "") cap.textContent = entry.caption || "";
   }
 
-  // ---------- Runaway button ----------
-  function initRunawayButtons(slideEl) {
-  const zone = slideEl.querySelector("[data-runaway-zone]");
-  const runaways = Array.from(slideEl.querySelectorAll("[data-runaway]"));
-  if (!zone || runaways.length === 0) return;
+  // ---------- Intro (Yes/No move like reference) ----------
+  function initIntroButtons(slideEl) {
+    const buttons = Array.from(slideEl.querySelectorAll("[data-move-btn]"));
+    if (!buttons.length) return;
 
-  const pad = 8;
+    const moveButton = (button) => {
+      const x = Math.random() * (window.innerWidth - button.offsetWidth);
+      const y = Math.random() * (window.innerHeight - button.offsetHeight);
+      button.style.position = "fixed";
+      button.style.left = `${Math.max(0, x)}px`;
+      button.style.top = `${Math.max(0, y)}px`;
+    };
 
-  const moveButton = (btn) => {
-    const zoneRect = zone.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-
-    const maxX = zoneRect.width - btnRect.width - pad;
-    const maxY = zoneRect.height - btnRect.height - pad;
-    if (maxX <= 0 || maxY <= 0) return;
-
-    const x = Math.random() * maxX + pad / 2;
-    const y = Math.random() * maxY + pad / 2;
-
-    btn.style.left = `${clamp(x, pad/2, maxX)}px`;
-    btn.style.top  = `${clamp(y, pad/2, maxY)}px`;
-    btn.style.right = "auto";
-    btn.style.bottom = "auto";
-
-    btn.animate(
-      [{ transform: "scale(1)" }, { transform: "scale(1.07)" }, { transform: "scale(1)" }],
-      { duration: 220, easing: "ease-out" }
-    );
-  };
-
-  // absolute positioning inside zone
-  runaways.forEach((btn, i) => {
-    btn.style.position = "absolute";
-    if (i === 0) { btn.style.left = "0px"; btn.style.top = "0px"; }
-    else { btn.style.right = "0px"; btn.style.bottom = "0px"; }
-  });
-
-  runaways.forEach((btn) => {
-    const onAttempt = (e) => {
+    const onTap = (e) => {
       e.preventDefault();
-      moveButton(btn);
+      moveButton(e.currentTarget);
+    };
 
-      // YES advances, but still "runs" first
-      if (btn.dataset.action === "next") {
-        setTimeout(() => nextSlide(), 220);
+    buttons.forEach(btn => {
+      btn.addEventListener("pointerdown", onTap, { passive: false });
+      btn.addEventListener("click", (e) => e.preventDefault());
+    });
+
+    // Helper for restart (put them back in flow)
+    slideEl._resetChoices = () => {
+      buttons.forEach(btn => {
+        btn.style.position = "";
+        btn.style.left = "";
+        btn.style.top = "";
+      });
+    };
+  }
+
+  function resetIntroChoices() {
+    const intro = document.querySelector('[data-slide="intro"]');
+    if (intro && typeof intro._resetChoices === "function") intro._resetChoices();
+  }
+
+  // ---------- Love meter (IDENTICAL logic to reference) ----------
+  function initLoveMeter(slideEl) {
+    const loveMeter = slideEl.querySelector("#loveMeter");
+    const loveValue = slideEl.querySelector("#loveValue");
+    const extraLove = slideEl.querySelector("#extraLove");
+    if (!loveMeter || !loveValue || !extraLove) return;
+
+    const msgs = config?.loveMessages || {
+      extreme: "WOOOOW You love me that much?? 🥰🚀💝",
+      high: "To infinity and beyond! 🚀💝",
+      normal: "And beyond! 🥰"
+    };
+
+    const onInput = () => {
+      const value = parseInt(loveMeter.value, 10);
+      loveValue.textContent = value;
+
+      if (value > 100) {
+        extraLove.classList.remove("hidden");
+
+        const overflowPercentage = (value - 100) / 9900;
+        const extraWidth = overflowPercentage * window.innerWidth * 0.8;
+
+        loveMeter.style.width = `calc(100% + ${extraWidth}px)`;
+        loveMeter.style.transition = "width 0.3s";
+
+        if (value >= 5000) {
+          extraLove.classList.add("super-love");
+          extraLove.textContent = msgs.extreme;
+        } else if (value > 1000) {
+          extraLove.classList.remove("super-love");
+          extraLove.textContent = msgs.high;
+        } else {
+          extraLove.classList.remove("super-love");
+          extraLove.textContent = msgs.normal;
+        }
+      } else {
+        extraLove.classList.add("hidden");
+        extraLove.classList.remove("super-love");
+        loveMeter.style.width = "100%";
       }
     };
 
-    btn.addEventListener("pointerdown", onAttempt, { passive: false });
-    btn.addEventListener("click", (e) => e.preventDefault());
-  });
+    loveMeter.addEventListener("input", onInput);
 
-  window.addEventListener("resize", () => runaways.forEach(moveButton));
-}
-
-  // ---------- Love meter ----------
-  function displayedLovePct(raw) {
-    // raw: 0..200
-    if (raw <= 100) return raw;
-
-    // Nonlinear boost above 100.
-    // This is the "End2EndAI vibe": quickly becomes ridiculous but still smooth.
-    const t = raw - 100; // 0..100
-    const boosted = 100 + Math.round((t * t) * 10); // 100..100100
-    return boosted;
-  }
-
-  function pickMeterMsg(pct, thresholds) {
-    let msg = thresholds?.[0]?.msg ?? "";
-    for (const t of thresholds || []) {
-      if (pct >= t.pct) msg = t.msg;
-    }
-    return msg;
-  }
-
-  function initLoveMeter(slideEl) {
-    const range = slideEl.querySelector("#loveRange");
-    const valueEl = slideEl.querySelector("#meterValue");
-    const msgEl = slideEl.querySelector("#meterMsg");
-    if (!range || !valueEl || !msgEl) return;
-
-    const render = () => {
-      const raw = Number(range.value || 0);
-      const pct = displayedLovePct(raw);
-      valueEl.textContent = `${pct.toLocaleString()}%`;
-      msgEl.textContent = pickMeterMsg(pct, config?.loveMeter?.thresholds);
+    // Expose reset for restart/show slide
+    slideEl._resetLoveMeter = () => {
+      loveMeter.value = 100;
+      loveValue.textContent = 100;
+      extraLove.classList.add("hidden");
+      extraLove.classList.remove("super-love");
+      extraLove.textContent = "";
+      loveMeter.style.width = "100%";
     };
 
-    range.addEventListener("input", render);
-    render();
+    // initial
+    slideEl._resetLoveMeter();
+    onInput();
+  }
+
+  function resetLoveMeter(slideEl) {
+    if (slideEl && typeof slideEl._resetLoveMeter === "function") {
+      slideEl._resetLoveMeter();
+    }
   }
 
   // ---------- Floating emojis ----------
@@ -202,7 +223,6 @@
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const rand = (min, max) => min + Math.random() * (max - min);
 
-    // Keep DOM bounded: remove nodes at animation end (no infinite buildup).
     const spawn = () => {
       const el = document.createElement("span");
       el.className = "float-emoji";
@@ -217,14 +237,10 @@
       el.style.animationDelay = `${rand(0, 350)}ms`;
 
       layer.appendChild(el);
-
-      const cleanup = () => el.remove();
-      el.addEventListener("animationend", cleanup, { once: true });
+      el.addEventListener("animationend", () => el.remove(), { once: true });
     };
 
-    // Initial burst (subtle)
     for (let i = 0; i < 6; i++) setTimeout(spawn, i * 120);
-
     setInterval(spawn, spawnEveryMs);
   }
 
@@ -252,33 +268,39 @@
       const action = btn.dataset.action;
       if (action === "next") nextSlide();
       else if (action === "prev") prevSlide();
-      else if (action === "restart") showSlide(0, "prev");
+      else if (action === "restart") {
+        // reset reference-like interactions
+        resetIntroChoices();
+        resetLoveMeter(document.querySelector('[data-slide="meter"]'));
+        showSlide(0, "prev");
+      }
     });
   }
 
   function init() {
     applyTheme(config);
 
-    // Hide all slides, show first
     slides.forEach((s, i) => {
       s.classList.toggle("is-active", i === 0);
       s.setAttribute("aria-hidden", i === 0 ? "false" : "true");
+      if (i !== 0) lockFocus(s);
     });
-    hydratePhotoSlide(slides[0]); // just in case
-    showSlide(0, "next"); // also applies focus management for first slide
 
     // Slide-specific components
-    initRunawayButtons(document.querySelector('[data-slide="intro"]'));
+    initIntroButtons(document.querySelector('[data-slide="intro"]'));
     initLoveMeter(document.querySelector('[data-slide="meter"]'));
     initGoodBoyReveal();
 
     // Background
     startFloatingEmojis(config);
 
+    // Focus first slide title
+    const firstTitle = slides[0]?.querySelector(".title");
+    if (firstTitle) firstTitle.focus({ preventScroll: true });
+
     bindGlobalActions();
   }
 
-  // DOM ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
