@@ -4,12 +4,12 @@ window.VAL_CONFIG = {
   pageTitle: "Happy Valentine 💝",
   // Palette gets mapped to CSS variables at runtime.
   palette: {
-    bg1: "#ff7bbf",
-    bg2: "#ffb3d9",
-    ink: "#2a0f20",
-    primary: "#ff3d8d",
-    primary2: "#ff6fae",
-  },
+  bg1: "#ffafbd",
+  bg2: "#ffc3a0",
+  ink: "#ff4757",
+  primary: "#ff6b6b",
+  primary2: "#ff8787",
+},
 
   // Floating emojis (hearts + bears + your symbols)
   floating: {
