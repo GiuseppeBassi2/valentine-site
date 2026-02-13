@@ -113,33 +113,59 @@
     if (!buttons.length) return;
 
     const moveButton = (button) => {
-  const vv = window.visualViewport;
-  const pad = 12;
+  const pad = 14; // margine di sicurezza
 
-  // fixed + posizione nota prima di misurare
+  // 1) Forza fixed subito (così la misura è quella "vera" in fixed)
   button.style.position = "fixed";
-  button.style.left = "0px";
-  button.style.top = "0px";
+  button.style.right = "";
+  button.style.bottom = "";
 
-  // misura reale (più affidabile di offsetWidth su mobile)
-  const rect = button.getBoundingClientRect();
+  // Metti temporaneamente in un punto safe per misurare bene
+  button.style.left = `${pad}px`;
+  button.style.top  = `${pad}px`;
 
-  // visual viewport (Safari/Chrome mobile) + offset
-  const vw = vv ? vv.width : document.documentElement.clientWidth;
+  const vv = window.visualViewport;
+
+  // 2) Dimensioni della "parte visibile" reale (iOS toolbar-safe)
+  const vw = vv ? vv.width  : document.documentElement.clientWidth;
   const vh = vv ? vv.height : document.documentElement.clientHeight;
   const ox = vv ? vv.offsetLeft : 0;
-  const oy = vv ? vv.offsetTop : 0;
+  const oy = vv ? vv.offsetTop  : 0;
 
+  // 3) Misura reale del bottone in fixed
+  const rect = button.getBoundingClientRect();
+
+  // 4) Range ammesso (clamp)
   const minX = ox + pad;
   const minY = oy + pad;
-  const maxX = ox + vw - rect.width - pad;
+  const maxX = ox + vw - rect.width  - pad;
   const maxY = oy + vh - rect.height - pad;
 
-  const x = minX + Math.random() * Math.max(0, maxX - minX);
-  const y = minY + Math.random() * Math.max(0, maxY - minY);
+  // Se lo schermo è troppo piccolo rispetto al bottone, blocca al minimo (non può uscire)
+  const x = (maxX <= minX) ? minX : (minX + Math.random() * (maxX - minX));
+  const y = (maxY <= minY) ? minY : (minY + Math.random() * (maxY - minY));
 
-  button.style.left = `${Math.max(minX, Math.min(x, maxX))}px`;
-  button.style.top = `${Math.max(minY, Math.min(y, maxY))}px`;
+  button.style.left = `${x}px`;
+  button.style.top  = `${y}px`;
+
+  // 5) Second pass: correggi eventuali overflow dovuti a reflow/font/zoom
+  requestAnimationFrame(() => {
+    const r2 = button.getBoundingClientRect();
+
+    let cx = x;
+    let cy = y;
+
+    const maxX2 = ox + vw - r2.width  - pad;
+    const maxY2 = oy + vh - r2.height - pad;
+
+    if (cx < minX) cx = minX;
+    if (cy < minY) cy = minY;
+    if (cx > maxX2) cx = maxX2;
+    if (cy > maxY2) cy = maxY2;
+
+    button.style.left = `${cx}px`;
+    button.style.top  = `${cy}px`;
+  });
 };
 
     const onTap = (e) => {
