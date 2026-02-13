@@ -4,24 +4,28 @@
 
 /* CSS variables are populated from JS config for easy theme tweaks */
 :root{
-  --bg1:#ff7bbf;
-  --bg2:#ffb3d9;
-  --ink:#2a0f20;
-  --muted:rgba(42,15,32,.72);
+  --bg1:#ffafbd;        /* repo: backgroundStart */
+  --bg2:#ffc3a0;        /* repo: backgroundEnd  */
+  --ink:#ff4757;        /* repo: textColor      */
+  --muted:rgba(255,71,87,.78);
+
   --card:rgba(255,255,255,.84);
   --card2:rgba(255,255,255,.72);
-  --primary:#ff3d8d;
-  --primary2:#ff6fae;
+
+  --primary:#ff6b6b;    /* repo: buttonBackground */
+  --primary2:#ff8787;   /* repo: buttonHover      */
+
   --shadow: 0 18px 50px rgba(0,0,0,.18);
   --radius: 22px;
-  --ring: 0 0 0 4px rgba(255, 61, 141, .18);
+  --ring: 0 0 0 4px rgba(255, 107, 107, .22);
 }
+
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
 body{
   margin:0;
-  font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   color:var(--ink);
   background: radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.35), transparent 50%),
               linear-gradient(160deg, var(--bg1), var(--bg2));
@@ -91,10 +95,12 @@ body{
 }
 
 .title{
+  font-family: "Dancing Script", cursive;
   margin: 0 0 10px;
-  font-size: 1.55rem;
+  font-size: 2.05rem;
   line-height: 1.05;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.2px;
+  color: var(--ink);
 }
 .subtitle{
   margin: 0 0 14px;
