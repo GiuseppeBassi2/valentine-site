@@ -99,65 +99,59 @@
   }
 
   // ---------- Runaway button ----------
-  function initRunawayButton(slideEl) {
-    const zone = slideEl.querySelector("[data-runaway-zone]");
-    const runaway = slideEl.querySelector("[data-runaway]");
-    if (!zone || !runaway) return;
+  function initRunawayButtons(slideEl) {
+  const zone = slideEl.querySelector("[data-runaway-zone]");
+  const runaways = Array.from(slideEl.querySelectorAll("[data-runaway]"));
+  if (!zone || runaways.length === 0) return;
 
-    // Place the runaway button at a nice initial spot
-    const initialPlace = () => {
-      runaway.style.left = "auto";
-      runaway.style.top = "auto";
-      runaway.style.right = "0px";
-      runaway.style.bottom = "0px";
-    };
-    initialPlace();
+  const pad = 8;
 
-    const move = () => {
-      const zoneRect = zone.getBoundingClientRect();
-      const btnRect = runaway.getBoundingClientRect();
+  const moveButton = (btn) => {
+    const zoneRect = zone.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
 
-      // Button is position:absolute within zone
-      // Compute available area with some padding.
-      const pad = 8;
-      const maxX = zoneRect.width - btnRect.width - pad;
-      const maxY = zoneRect.height - btnRect.height - pad;
+    const maxX = zoneRect.width - btnRect.width - pad;
+    const maxY = zoneRect.height - btnRect.height - pad;
+    if (maxX <= 0 || maxY <= 0) return;
 
-      // Random target within bounds
-      const x = Math.random() * maxX + pad/2;
-      const y = Math.random() * maxY + pad/2;
+    const x = Math.random() * maxX + pad / 2;
+    const y = Math.random() * maxY + pad / 2;
 
-      runaway.style.left = `${clamp(x, pad/2, maxX)}px`;
-      runaway.style.top = `${clamp(y, pad/2, maxY)}px`;
-      runaway.style.right = "auto";
-      runaway.style.bottom = "auto";
+    btn.style.left = `${clamp(x, pad/2, maxX)}px`;
+    btn.style.top  = `${clamp(y, pad/2, maxY)}px`;
+    btn.style.right = "auto";
+    btn.style.bottom = "auto";
 
-      // Micro-bounce
-      runaway.animate(
-        [{ transform: "scale(1)" }, { transform: "scale(1.06)" }, { transform: "scale(1)" }],
-        { duration: 220, easing: "ease-out" }
-      );
-    };
+    btn.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.07)" }, { transform: "scale(1)" }],
+      { duration: 220, easing: "ease-out" }
+    );
+  };
 
-    // For touch devices: pointerdown is the most reliable.
-    const onScare = (e) => {
-      // Prevent accidental click selection
+  // absolute positioning inside zone
+  runaways.forEach((btn, i) => {
+    btn.style.position = "absolute";
+    if (i === 0) { btn.style.left = "0px"; btn.style.top = "0px"; }
+    else { btn.style.right = "0px"; btn.style.bottom = "0px"; }
+  });
+
+  runaways.forEach((btn) => {
+    const onAttempt = (e) => {
       e.preventDefault();
-      move();
+      moveButton(btn);
+
+      // YES advances, but still "runs" first
+      if (btn.dataset.action === "next") {
+        setTimeout(() => nextSlide(), 220);
+      }
     };
 
-    runaway.addEventListener("pointerdown", onScare, { passive: false });
-    runaway.addEventListener("mouseenter", move);
+    btn.addEventListener("pointerdown", onAttempt, { passive: false });
+    btn.addEventListener("click", (e) => e.preventDefault());
+  });
 
-    // Also move if user tries to focus it via keyboard (cute but consistent)
-    runaway.addEventListener("focus", move);
-
-    // If window resizes, keep it within bounds
-    window.addEventListener("resize", () => {
-      // Try a gentle re-place rather than leaving it off-screen.
-      move();
-    });
-  }
+  window.addEventListener("resize", () => runaways.forEach(moveButton));
+}
 
   // ---------- Love meter ----------
   function displayedLovePct(raw) {
