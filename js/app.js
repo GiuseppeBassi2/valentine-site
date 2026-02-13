@@ -113,12 +113,20 @@
     if (!buttons.length) return;
 
     const moveButton = (button) => {
-      const x = Math.random() * (window.innerWidth - button.offsetWidth);
-      const y = Math.random() * (window.innerHeight - button.offsetHeight);
-      button.style.position = "fixed";
-      button.style.left = `${Math.max(0, x)}px`;
-      button.style.top = `${Math.max(0, y)}px`;
-    };
+  const pad = 12;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  const maxX = Math.max(pad, w - button.offsetWidth - pad);
+  const maxY = Math.max(pad, h - button.offsetHeight - pad);
+
+  const x = pad + Math.random() * (maxX - pad);
+  const y = pad + Math.random() * (maxY - pad);
+
+  button.style.position = "fixed";
+  button.style.left = `${x}px`;
+  button.style.top = `${y}px`;
+};
 
     const onTap = (e) => {
       e.preventDefault();
