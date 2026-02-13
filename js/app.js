@@ -268,7 +268,7 @@
     showSlide(0, "next"); // also applies focus management for first slide
 
     // Slide-specific components
-    initRunawayButton(document.querySelector('[data-slide="intro"]'));
+    initRunawayButtons(document.querySelector('[data-slide="intro"]'));
     initLoveMeter(document.querySelector('[data-slide="meter"]'));
     initGoodBoyReveal();
 
