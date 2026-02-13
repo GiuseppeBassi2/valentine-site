@@ -61,16 +61,21 @@
 
     // Hide previous
     if (prevSlide) {
-      prevSlide.classList.remove("is-active", "is-enter-left", "is-enter-right");
-      prevSlide.setAttribute("aria-hidden", "true");
-      lockFocus(prevSlide);
-    }
+  // ✅ se sto uscendo dalla intro: rimetti i bottoni al loro posto e nascondili
+  if (prevSlide.dataset.slide === "intro") cleanupIntroButtons();
 
-    // Show next
+  prevSlide.classList.remove("is-active", "is-enter-left", "is-enter-right");
+  prevSlide.setAttribute("aria-hidden", "true");
+  lockFocus(prevSlide);
+}
+
     nextSlide.classList.add("is-active");
-    nextSlide.classList.add(direction === "prev" ? "is-enter-left" : "is-enter-right");
-    nextSlide.setAttribute("aria-hidden", "false");
-    unlockFocus(nextSlide);
+nextSlide.classList.add(direction === "prev" ? "is-enter-left" : "is-enter-right");
+nextSlide.setAttribute("aria-hidden", "false");
+unlockFocus(nextSlide);
+
+// ✅ se sto entrando nella intro: rendi di nuovo visibili i bottoni
+if (nextSlide.dataset.slide === "intro") showIntroButtons();
 
     currentSlideIndex = nextIdx;
 
@@ -195,6 +200,30 @@ function initIntroButtons(slideEl) {
     if (intro && typeof intro._resetChoices === "function") intro._resetChoices();
   }
 
+   function cleanupIntroButtons() {
+  const intro = document.querySelector('[data-slide="intro"]');
+  if (!intro) return;
+
+  // Rimette i bottoni al loro posto (se sono finiti nel body)
+  if (typeof intro._resetChoices === "function") intro._resetChoices();
+
+  // E in più li rende invisibili finché non torni in intro (opzionale ma carino)
+  intro.querySelectorAll("[data-move-btn]").forEach(btn => {
+    btn.style.visibility = "hidden";
+    btn.style.pointerEvents = "none";
+  });
+}
+
+function showIntroButtons() {
+  const intro = document.querySelector('[data-slide="intro"]');
+  if (!intro) return;
+  intro.querySelectorAll("[data-move-btn]").forEach(btn => {
+    btn.style.visibility = "";
+    btn.style.pointerEvents = "";
+  });
+}
+
+   
   // ---------- Love meter (IDENTICAL logic to reference) ----------
   function initLoveMeter(slideEl) {
     const loveMeter = slideEl.querySelector("#loveMeter");
@@ -316,14 +345,21 @@ function initIntroButtons(slideEl) {
       if (!btn) return;
 
       const action = btn.dataset.action;
-      if (action === "next") nextSlide();
-      else if (action === "prev") prevSlide();
-      else if (action === "restart") {
-        // reset reference-like interactions
-        resetIntroChoices();
-        resetLoveMeter(document.querySelector('[data-slide="meter"]'));
-        showSlide(0, "prev");
-      }
+
+if (action === "next") {
+  // ✅ se sto avanzando dalla intro: pulisci subito i bottoni “teleportati”
+  const current = slides[currentSlideIndex];
+  if (current?.dataset?.slide === "intro") cleanupIntroButtons();
+
+  nextSlide();
+}
+else if (action === "prev") prevSlide();
+else if (action === "restart") {
+  // reset reference-like interactions
+  resetIntroChoices();
+  resetLoveMeter(document.querySelector('[data-slide="meter"]'));
+  showSlide(0, "prev");
+}
     });
   }
 
