@@ -13,7 +13,7 @@ window.VAL_CONFIG = {
 
   floating: {
     enabled: true,
-    emojis: ["💗","💞","🧸","🌹","🍫","🐥","🦙","🦆"],
+    emojis: ["💗","💖","🧸","🌹","🍫","🐥","🦙", "🐧", "🐻", "💝", "❤️"],
     spawnEveryMs: 520,
     durationMs: [7000, 11000],
     sizePx: [18, 34],
@@ -41,11 +41,11 @@ window.VAL_CONFIG = {
     },
     PAPERA_MIN: {
       src: "assets/PAPERA_MIN.jpg",
-      caption: "Mia Papera. Molto papera 😌🦆"
+      caption: "Mia Papera. Molto papera 😌🐥"
     },
     MINNIE_TOGETHER: {
       src: "assets/MINNIE_TOGETHER.jpg",
-      caption: "Molto Bambini"
+      caption: "Molto Bambini 🐥💝"
     },
     CHICAGO: {
       src: "assets/CHICAGO.jpg",
