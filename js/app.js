@@ -25,7 +25,8 @@
 
   // ---------- Slide Engine ----------
   let currentSlideIndex = 0;
-  const slides = Array.from(document.querySelectorAll(".slide"));
+  const slides = Array.from(document.querySelectorAll(".slide"))
+  .filter(s => !s.hasAttribute("data-disabled"));
 
   function lockFocus(slideEl) {
     slideEl.querySelectorAll("a,button,input,textarea,select,[tabindex]")
