@@ -103,6 +103,12 @@ body{
   font-weight: 700;
 }
 
+.title:focus,
+.title:focus-visible{
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* mimic reference: h1 more intense, h2 slightly lighter */
 .card h1.title{ color: var(--primary); font-size: 2rem; margin-bottom: 14px; }
 .card h2.title{ color: var(--primary2); font-size: 1.45rem; }
