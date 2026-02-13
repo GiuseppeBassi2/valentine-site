@@ -113,19 +113,33 @@
     if (!buttons.length) return;
 
     const moveButton = (button) => {
+  const vv = window.visualViewport;
   const pad = 12;
-  const w = window.innerWidth;
-  const h = window.innerHeight;
 
-  const maxX = Math.max(pad, w - button.offsetWidth - pad);
-  const maxY = Math.max(pad, h - button.offsetHeight - pad);
-
-  const x = pad + Math.random() * (maxX - pad);
-  const y = pad + Math.random() * (maxY - pad);
-
+  // fixed + posizione nota prima di misurare
   button.style.position = "fixed";
-  button.style.left = `${x}px`;
-  button.style.top = `${y}px`;
+  button.style.left = "0px";
+  button.style.top = "0px";
+
+  // misura reale (più affidabile di offsetWidth su mobile)
+  const rect = button.getBoundingClientRect();
+
+  // visual viewport (Safari/Chrome mobile) + offset
+  const vw = vv ? vv.width : document.documentElement.clientWidth;
+  const vh = vv ? vv.height : document.documentElement.clientHeight;
+  const ox = vv ? vv.offsetLeft : 0;
+  const oy = vv ? vv.offsetTop : 0;
+
+  const minX = ox + pad;
+  const minY = oy + pad;
+  const maxX = ox + vw - rect.width - pad;
+  const maxY = oy + vh - rect.height - pad;
+
+  const x = minX + Math.random() * Math.max(0, maxX - minX);
+  const y = minY + Math.random() * Math.max(0, maxY - minY);
+
+  button.style.left = `${Math.max(minX, Math.min(x, maxX))}px`;
+  button.style.top = `${Math.max(minY, Math.min(y, maxY))}px`;
 };
 
     const onTap = (e) => {
