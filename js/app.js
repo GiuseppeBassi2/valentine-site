@@ -108,85 +108,87 @@
   }
 
   // ---------- Intro (Yes/No move like reference) ----------
-  function initIntroButtons(slideEl) {
+function initIntroButtons(slideEl) {
     const buttons = Array.from(slideEl.querySelectorAll("[data-move-btn]"));
     if (!buttons.length) return;
 
+    // Salviamo il genitore originale per poter fare il "reset" dopo
+    buttons.forEach(btn => {
+        if (!btn.dataset.originalParent) {
+            // Usiamo un placeholder per ricordare dove stava
+            const placeholder = document.createComment("btn-placeholder");
+            btn.parentNode.insertBefore(placeholder, btn);
+            btn._placeholder = placeholder;
+        }
+    });
+
     const moveButton = (button) => {
-  const pad = 14; // margine di sicurezza
+        // 1. Se il bottone è ancora nella slide, spostalo nel BODY per evitare
+        // che venga tagliato da overflow:hidden o trasformazioni CSS della slide.
+        if (button.parentNode !== document.body) {
+            const rect = button.getBoundingClientRect();
+            // Mantieni la larghezza visiva attuale
+            button.style.width = `${rect.width}px`; 
+            document.body.appendChild(button);
+        }
 
-  // 1) Forza fixed subito (così la misura è quella "vera" in fixed)
-  button.style.position = "fixed";
-  button.style.right = "";
-  button.style.bottom = "";
+        // 2. Calcoli semplici e sicuri (come nel primo codice)
+        const pad = 20; // Margine di sicurezza dal bordo schermo
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        
+        // Dimensioni attuali del bottone
+        const btnW = button.offsetWidth;
+        const btnH = button.offsetHeight;
 
-  // Metti temporaneamente in un punto safe per misurare bene
-  button.style.left = `${pad}px`;
-  button.style.top  = `${pad}px`;
+        // Area sicura dove il bottone può andare
+        const maxX = vw - btnW - pad;
+        const maxY = vh - btnH - pad;
 
-  const vv = window.visualViewport;
+        // Genera coordinate random
+        const x = Math.random() * (maxX - pad) + pad;
+        const y = Math.random() * (maxY - pad) + pad;
 
-  // 2) Dimensioni della "parte visibile" reale (iOS toolbar-safe)
-  const vw = vv ? vv.width  : document.documentElement.clientWidth;
-  const vh = vv ? vv.height : document.documentElement.clientHeight;
-  const ox = vv ? vv.offsetLeft : 0;
-  const oy = vv ? vv.offsetTop  : 0;
-
-  // 3) Misura reale del bottone in fixed
-  const rect = button.getBoundingClientRect();
-
-  // 4) Range ammesso (clamp)
-  const minX = ox + pad;
-  const minY = oy + pad;
-  const maxX = ox + vw - rect.width  - pad;
-  const maxY = oy + vh - rect.height - pad;
-
-  // Se lo schermo è troppo piccolo rispetto al bottone, blocca al minimo (non può uscire)
-  const x = (maxX <= minX) ? minX : (minX + Math.random() * (maxX - minX));
-  const y = (maxY <= minY) ? minY : (minY + Math.random() * (maxY - minY));
-
-  button.style.left = `${x}px`;
-  button.style.top  = `${y}px`;
-
-  // 5) Second pass: correggi eventuali overflow dovuti a reflow/font/zoom
-  requestAnimationFrame(() => {
-    const r2 = button.getBoundingClientRect();
-
-    let cx = x;
-    let cy = y;
-
-    const maxX2 = ox + vw - r2.width  - pad;
-    const maxY2 = oy + vh - r2.height - pad;
-
-    if (cx < minX) cx = minX;
-    if (cy < minY) cy = minY;
-    if (cx > maxX2) cx = maxX2;
-    if (cy > maxY2) cy = maxY2;
-
-    button.style.left = `${cx}px`;
-    button.style.top  = `${cy}px`;
-  });
-};
+        // 3. Applica lo stile
+        button.style.position = 'fixed';
+        button.style.left = `${x}px`;
+        button.style.top = `${y}px`;
+        button.style.zIndex = "99999"; // Assicuriamoci che sia sopra a tutto
+        
+        // Rimuovi eventuali margini che potrebbero sballare la posizione
+        button.style.margin = "0"; 
+    };
 
     const onTap = (e) => {
-      e.preventDefault();
-      moveButton(e.currentTarget);
+        e.preventDefault(); // Evita doppio click/zoom su mobile
+        moveButton(e.currentTarget);
     };
 
     buttons.forEach(btn => {
-      btn.addEventListener("pointerdown", onTap, { passive: false });
-      btn.addEventListener("click", (e) => e.preventDefault());
+        // Supporto sia per touch che per mouse
+        btn.addEventListener("touchstart", onTap, { passive: false });
+        btn.addEventListener("mouseover", onTap); // Per desktop
+        btn.addEventListener("click", (e) => e.preventDefault());
     });
 
-    // Helper for restart (put them back in flow)
+    // Helper for restart (li rimette al loro posto originale)
     slideEl._resetChoices = () => {
-      buttons.forEach(btn => {
-        btn.style.position = "";
-        btn.style.left = "";
-        btn.style.top = "";
-      });
+        buttons.forEach(btn => {
+            // Rimuovi stili inline (fixed, top, left...)
+            btn.style.position = "";
+            btn.style.left = "";
+            btn.style.top = "";
+            btn.style.width = "";
+            btn.style.zIndex = "";
+            btn.style.margin = "";
+
+            // Se è stato spostato nel body, rimettilo al suo posto
+            if (btn.parentNode === document.body && btn._placeholder) {
+                btn._placeholder.parentNode.insertBefore(btn, btn._placeholder.nextSibling);
+            }
+        });
     };
-  }
+}
 
   function resetIntroChoices() {
     const intro = document.querySelector('[data-slide="intro"]');
