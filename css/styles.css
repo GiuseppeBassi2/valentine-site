@@ -221,7 +221,7 @@ body{
 /* Runaway zone keeps button bounded */
 .runaway-zone{
   position: relative;
-  min-height: 110px;
+  min-height: 150px;
   padding: 6px 4px 2px;
 }
 .runaway-zone .btn{
