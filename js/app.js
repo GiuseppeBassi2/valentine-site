@@ -287,7 +287,21 @@
 
   function init() {
     applyTheme(config);
+    function preloadPhotos(cfg) {
+  const photos = cfg?.photos || {};
+  const entries = Object.values(photos);
+  const run = () => {
+    entries.forEach(p => {
+      if (!p?.src) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = p.src;
+    });
+  };
 
+  if ("requestIdleCallback" in window) requestIdleCallback(run);
+  else setTimeout(run, 250);
+}
     slides.forEach((s, i) => {
       s.classList.toggle("is-active", i === 0);
       s.setAttribute("aria-hidden", i === 0 ? "false" : "true");
