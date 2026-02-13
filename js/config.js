@@ -4,12 +4,12 @@ window.VAL_CONFIG = {
 
   // Keep your background colors; match reference vibe for text/buttons
   palette: {
-    bg1: "#ff7bbf",
-    bg2: "#ffb3d9",
-    ink: "#ff4757",
-    primary: "#ff6b6b",
-    primary2: "#ff8787",
-  },
+  bg1: "#ffafbd",
+  bg2: "#ffc3a0",
+  ink: "#ff4757",
+  primary: "#ff6b6b",
+  primary2: "#ff8787",
+},
 
   floating: {
     enabled: true,
