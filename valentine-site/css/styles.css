@@ -346,3 +346,19 @@ body{
   .duo{ min-height: 460px; }
   .duo-frame{ width: 46%; max-width: 280px; }
 }
+
+/* End2EndAI-inspired bounce */
+@keyframes bounce {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(-10px) scale(1.04); }
+}
+
+.jump-bear{
+  font-size: 4rem;
+  display: grid;
+  place-items: center;
+  padding: 10px 0;
+  animation: bounce .55s ease-in-out infinite alternate;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,.12));
+}
+
