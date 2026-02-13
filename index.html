@@ -6,10 +6,8 @@
   <meta name="theme-color" content="#ff6fae" />
   <title>Valentine 💝</title>
 
-  <!-- Optional: cute font (safe if blocked; falls back to system). -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- SAME fonts link as reference repo -->
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -18,70 +16,69 @@
   <div id="float-layer" aria-hidden="true"></div>
 
   <main id="app" class="app" aria-live="polite">
-    <!--
-      Slide Engine rule:
-      - Every slide is a <section class="slide">.
-      - Only one slide is visible via .is-active.
-      - Each slide includes a single "Next" CTA (or custom CTAs).
-    -->
-
-    <!-- 0) Intro / Runaway button -->
+    <!-- 0) Intro (reference-like): Yes/No same + both move. ONLY secret button advances -->
     <section class="slide" data-slide="intro">
-  <div class="card">
-    <p class="eyebrow">For Min-Kyoung</p>
-
-    <h1 class="title" tabindex="-1">Do you like me?</h1>
-
-    <div class="btn-row runaway-zone" data-runaway-zone>
-      <button class="btn btn-primary" data-action="next" data-runaway>YES</button>
-      <button class="btn btn-secondary" data-runaway>NO</button>
-    </div>
-
-    <p class="hint">I don't like you, I love you!</p>
-  </div>
-</section>
-    
-    <!-- 1) Love meter -->
-    <section class="slide" data-slide="meter">
       <div class="card">
-        <p class="eyebrow">📏 Love Meter</p>
-        <h2 class="title" tabindex="-1">How much do you love me?</h2>
-        <p class="subtitle">Try to go over 100% 😏</p>
+        <p class="eyebrow">💌 For Min-Kyoung</p>
+        <h1 class="title" tabindex="-1">Do you like me?</h1>
 
-        <div class="meter">
-          <div class="meter-top">
-            <div class="meter-value" id="meterValue">0%</div>
-            <div class="meter-msg" id="meterMsg">Slide it… come on 🥺</div>
-          </div>
-
-          <input
-            id="loveRange"
-            class="range"
-            type="range"
-            min="0"
-            max="200"
-            value="0"
-            step="1"
-            aria-label="Love meter"
-          />
-          <div class="meter-scale">
-            <span>0%</span><span>100%</span><span>???</span>
-          </div>
+        <div class="btn-row">
+          <button class="btn btn-primary choice-btn" type="button" data-move-btn>Yes</button>
+          <button class="btn btn-primary choice-btn" type="button" data-move-btn>No</button>
         </div>
+      </div>
 
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+      <!-- Secret answer OUTSIDE the card (fixed bottom-left) -->
+      <div class="secret-answer" aria-label="Hidden answer">
+        <button
+          class="btn btn-primary secret-btn"
+          type="button"
+          data-action="next"
+          id="secretAnswerBtn"
+        >
+          I don't like you, I love you! 💖✨
+        </button>
       </div>
     </section>
 
-    <!-- 2..n) Photo story slides (one photo per slide = simplest & most robust) -->
+    <!-- 1) Love meter (IDENTICAL structure/logic to reference) -->
+    <section class="slide" data-slide="meter">
+      <div class="card">
+        <h1 class="title" tabindex="-1">📏 Love Meter</h1>
+        <h2 class="title">How much do you love me? 🥺</h2>
+
+        <div class="love-meter">
+          <input
+            type="range"
+            min="0"
+            max="10000"
+            value="100"
+            class="slider"
+            id="loveMeter"
+            aria-label="Love meter"
+          />
+          <p>
+            <span class="love-value-container">
+              <span id="startText">This much!</span>
+              (<span id="loveValue">100</span>%)
+            </span>
+            <span id="extraLove" class="hidden"></span>
+          </p>
+        </div>
+
+        <button class="btn btn-primary" type="button" data-action="next" id="nextBtn">Next ❤️</button>
+      </div>
+    </section>
+
+    <!-- 2) Photo story slides -->
     <section class="slide" data-slide="photo-innamorato" data-photo-key="INNAMORATO">
       <div class="card">
-        <h2 class="title" tabindex="-1">I also love you 🥺</h2>
+        <h2 class="title" tabindex="-1">I also love you 🥰</h2>
         <figure class="figure">
           <img class="photo" data-photo alt="Us" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
         </figure>
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
@@ -92,7 +89,7 @@
           <img class="photo" data-photo alt="First date" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
         </figure>
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
@@ -103,48 +100,43 @@
           <img class="photo" data-photo alt="Museum" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
         </figure>
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
     <section class="slide" data-slide="photo-papera" data-photo-key="PAPERA_MIN">
       <div class="card">
-        <h2 class="title" tabindex="-1">My papera 🦆</h2>
+        <h2 class="title" tabindex="-1">My papera 🐥</h2>
         <figure class="figure">
           <img class="photo" data-photo alt="Duck vibes" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
         </figure>
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
-    <!-- Min vs Minnie (two vertical images) -->
-    <section class="slide" data-slide="min-vs-minnie">
+    <!-- Duo slide: remove "Min vs Minnie" + new title + japanese placeholder -->
+    <section class="slide" data-slide="my-baby-princess">
       <div class="card card-wide">
-        <p class="eyebrow">🎀 Min vs Minnie</p>
-        <h2 class="title" tabindex="-1">You two are basically the same 😳</h2>
+        <h2 class="title" tabindex="-1">My Baby Princess 👑🎀</h2>
 
-        <!-- Mobile-first: sfasato layout -->
-        <div class="duo" aria-label="Two photos comparison">
+        <div class="duo" aria-label="Two photos">
           <figure class="duo-frame duo-a">
             <img class="photo" src="assets/CUTE_MIN.JPG" alt="Min cute" loading="lazy" decoding="async">
-            <figcaption class="mini-cap">Min (real) 💘</figcaption>
           </figure>
 
           <figure class="duo-frame duo-b">
             <img class="photo" src="assets/CUTE_MINNIE.PNG" alt="Minnie cute" loading="lazy" decoding="async">
-            <figcaption class="mini-cap">Minnie (also you) 🎀</figcaption>
           </figure>
 
           <div class="duo-text">
             <p class="caption">
-              <strong>So cute</strong> it’s illegal.  
-              <span class="small">(Insert your “ASSE_GIAPPONE” quote here.)</span>
+              「可愛いから好き」なんじゃない 「好きだから可愛い」んだよ
             </p>
           </div>
         </div>
 
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
@@ -155,22 +147,22 @@
           <img class="photo" data-photo alt="Minnie together" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
         </figure>
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
     <section class="slide" data-slide="photo-chicago" data-photo-key="CHICAGO">
       <div class="card">
-        <h2 class="title" tabindex="-1">Us (Chicago edition) 🏙️</h2>
+        <h2 class="title" tabindex="-1">Us 💞</h2>
         <figure class="figure figure-wide">
           <img class="photo" data-photo alt="Chicago" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
         </figure>
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
-    <!-- Text-only reveal -->
+    <!-- Confession: eyebrow left, rest centered (handled by CSS) -->
     <section class="slide" data-slide="good-boy">
       <div class="card">
         <p class="eyebrow">🐾 Confession</p>
@@ -178,13 +170,13 @@
         <p class="subtitle" id="slaveLine" hidden>(and your slave) 🫣💘</p>
 
         <div class="btn-row">
-          <button class="btn btn-secondary" id="revealBtn">Tap for the secret 🤭</button>
-          <button class="btn btn-primary" data-action="next">Next ➜</button>
+          <button class="btn btn-secondary" type="button" id="revealBtn">Tap for the secret 🤭</button>
+          <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
         </div>
       </div>
     </section>
 
-    <!-- 3D heart placeholder (no implementation yet) -->
+    <!-- 3D heart placeholder -->
     <section class="slide" data-slide="heart3d">
       <div class="card">
         <p class="eyebrow">🧠 Nerd Heart</p>
@@ -197,14 +189,15 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" data-action="next">Next ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">Next ➜</button>
       </div>
     </section>
 
-    <!-- Finale (Korean + photo) -->
+    <!-- Final: title ABOVE image, no heart-only title -->
     <section class="slide" data-slide="final" data-photo-key="HEART_MIN_1">
       <div class="card">
-        <h2 class="title" tabindex="-1">💝</h2>
+        <h2 class="title" tabindex="-1">Happy Valentine's Day, my love 💗</h2>
+
         <figure class="figure">
           <img class="photo" data-photo alt="Min with hearts" loading="lazy" decoding="async" />
           <figcaption class="caption" data-caption></figcaption>
@@ -215,24 +208,21 @@
           <p class="subtitle">I will love you forever. 🦙🦆</p>
         </div>
 
-        <button class="btn btn-primary" data-action="next">One last thing ➜</button>
+        <button class="btn btn-primary" type="button" data-action="next">One last thing ➜</button>
       </div>
     </section>
 
-    <!-- After-credit: bear gif + chocolates -->
+    <!-- After: only title + gift visual, remove bottom text -->
     <section class="slide" data-slide="after">
       <div class="card">
-        <p class="eyebrow">🍫 Gift time</p>
-        <h2 class="title" tabindex="-1">Now come get your gift!</h2>
+        <h2 class="title" tabindex="-1">Here is your gift 💗🍫</h2>
 
         <div class="stack">
           <div class="jump-bear" role="img" aria-label="Jumping bear">🧸</div>
           <img class="sticker" src="assets/chocolates.png" alt="Chocolates" loading="lazy" decoding="async" />
         </div>
 
-        <p class="caption">A big warm hug, a huge kiss… and bonbons. 😚🍫</p>
-
-        <button class="btn btn-secondary" data-action="restart">Replay 🔁</button>
+        <button class="btn btn-secondary" type="button" data-action="restart">Replay 🔁</button>
       </div>
     </section>
 
